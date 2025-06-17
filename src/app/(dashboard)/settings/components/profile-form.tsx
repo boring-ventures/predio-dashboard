@@ -43,17 +43,18 @@ export function ProfileForm() {
   }
 
   async function handleConfirmUpdate() {
-    if (!pendingChanges || !profile?.userId) return;
+    if (!pendingChanges || !profile?.user_id) return;
 
     try {
       setIsUpdating(true);
 
-      const response = await fetch(`/api/profile/${profile.userId}`, {
+      const response = await fetch(`/api/profile/${profile.user_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...pendingChanges,
-          avatarUrl: newAvatarUrl || profile.avatarUrl,
+          profile_image_url: newAvatarUrl || profile.profile_image_url,
+          client_type: profile.client_type,
         }),
       });
 
@@ -84,8 +85,8 @@ export function ProfileForm() {
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           {profile && (
             <AvatarUpload
-              userId={profile.userId}
-              currentAvatarUrl={profile.avatarUrl || null}
+              userId={profile.user_id}
+              currentAvatarUrl={profile.profile_image_url || null}
               onUploadComplete={(url) => setNewAvatarUrl(url)}
               onUploadError={(error) => {
                 toast({

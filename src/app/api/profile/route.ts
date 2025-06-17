@@ -22,7 +22,7 @@ export async function GET() {
 
     // Fetch profile from the database
     const profile = await prisma.profile.findUnique({
-      where: { userId },
+      where: { user_id: userId },
     });
 
     if (!profile) {
@@ -56,16 +56,16 @@ export async function PUT(request: NextRequest) {
 
     const userId = session.user.id;
     const data = await request.json();
-    const { firstName, lastName, avatarUrl, active } = data;
+    const { firstName, lastName, profile_image_url, client_type } = data;
 
     // Update profile in the database
     const updatedProfile = await prisma.profile.update({
-      where: { userId },
+      where: { user_id: userId },
       data: {
         firstName,
         lastName,
-        avatarUrl,
-        active,
+        profile_image_url,
+        client_type,
       },
     });
 
@@ -83,35 +83,67 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { userId, firstName, lastName, avatarUrl } = data;
+    const { userId, firstName, lastName, profile_image_url, client_type } =
+      data;
+
+    console.log("Creating profile with data:", {
+      userId,
+      firstName,
+      lastName,
+      profile_image_url,
+      client_type,
+    });
+
+    // Validate client_type to be one of the allowed values
+    const allowedClientTypes = [
+      "Individual",
+      "Business",
+      "Corporate",
+      "Enterprise",
+    ];
+    const validatedClientType =
+      client_type && allowedClientTypes.includes(client_type)
+        ? client_type
+        : "Individual";
 
     // If userId is provided directly (during signup flow)
     if (userId) {
       // Check if profile already exists
       const existingProfile = await prisma.profile.findUnique({
-        where: { userId },
+        where: { user_id: userId },
       });
 
       if (existingProfile) {
+        console.log("Profile already exists for user:", userId);
         return NextResponse.json(
           { error: "Profile already exists" },
           { status: 409 }
         );
       }
 
-      // Create profile in the database
-      const newProfile = await prisma.profile.create({
-        data: {
-          userId,
-          firstName,
-          lastName,
-          avatarUrl,
-          active: true,
-          role: "USER",
-        },
-      });
+      try {
+        // Create profile in the database
+        const newProfile = await prisma.profile.create({
+          data: {
+            user_id: userId,
+            firstName: firstName || null,
+            lastName: lastName || null,
+            profile_image_url: profile_image_url || null,
+            client_type: validatedClientType,
+          },
+        });
 
-      return NextResponse.json(newProfile, { status: 201 });
+        console.log("Profile created successfully:", newProfile);
+        return NextResponse.json({ profile: newProfile }, { status: 201 });
+      } catch (createError) {
+        console.error("Prisma create error:", createError);
+        return NextResponse.json(
+          {
+            error: `Database error: ${createError instanceof Error ? createError.message : "Unknown error"}`,
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // Normal flow requiring authentication
@@ -131,7 +163,7 @@ export async function POST(request: NextRequest) {
 
     // Check if profile already exists
     const existingProfile = await prisma.profile.findUnique({
-      where: { userId: authenticatedUserId },
+      where: { user_id: authenticatedUserId },
     });
 
     if (existingProfile) {
@@ -141,19 +173,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create profile in the database
-    const newProfile = await prisma.profile.create({
-      data: {
-        userId: authenticatedUserId,
-        firstName,
-        lastName,
-        avatarUrl,
-        active: true,
-        role: "USER",
-      },
-    });
+    try {
+      // Create profile in the database
+      const newProfile = await prisma.profile.create({
+        data: {
+          user_id: authenticatedUserId,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          profile_image_url: profile_image_url || null,
+          client_type: validatedClientType,
+        },
+      });
 
-    return NextResponse.json(newProfile, { status: 201 });
+      return NextResponse.json({ profile: newProfile }, { status: 201 });
+    } catch (createError) {
+      console.error("Prisma create error:", createError);
+      return NextResponse.json(
+        {
+          error: `Database error: ${createError instanceof Error ? createError.message : "Unknown error"}`,
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Error creating profile:", error);
     return NextResponse.json(

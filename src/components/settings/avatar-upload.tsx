@@ -9,7 +9,7 @@ import { uploadAvatar } from "@/lib/supabase/upload-avatar";
 
 interface AvatarUploadProps {
   userId: string;
-  currentAvatarUrl: string | null;
+  currentAvatarUrl?: string | null;
   onUploadComplete: (url: string) => void;
   onUploadError: (error: Error) => void;
 }
@@ -39,8 +39,8 @@ export function AvatarUpload({
 
     try {
       setIsUploading(true);
-      const avatarUrl = await uploadAvatar(file, userId);
-      onUploadComplete(avatarUrl);
+      const profile_image_url = await uploadAvatar(file, userId);
+      onUploadComplete(profile_image_url);
       toast({
         title: "Avatar actualizado",
         description: "Tu foto de perfil ha sido actualizada correctamente.",

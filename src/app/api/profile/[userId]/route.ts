@@ -23,13 +23,9 @@ export async function GET(
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Only allow users to view their own profile (or admin users to view any profile)
+    // Only allow users to view their own profile
     const currentUser = session.user;
-    const userProfile = await prisma.profile.findUnique({
-      where: { userId: currentUser.id },
-    });
-
-    if (userId !== currentUser.id && userProfile?.role !== "SUPERADMIN") {
+    if (userId !== currentUser.id) {
       return NextResponse.json(
         { error: "Unauthorized to view this profile" },
         { status: 403 }
@@ -37,7 +33,7 @@ export async function GET(
     }
 
     const profile = await prisma.profile.findUnique({
-      where: { userId },
+      where: { user_id: userId },
     });
 
     if (!profile) {
@@ -74,13 +70,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Only allow users to update their own profile (or admin users to update any profile)
+    // Only allow users to update their own profile
     const currentUser = session.user;
-    const userProfile = await prisma.profile.findUnique({
-      where: { userId: currentUser.id },
-    });
-
-    if (userId !== currentUser.id && userProfile?.role !== "SUPERADMIN") {
+    if (userId !== currentUser.id) {
       return NextResponse.json(
         { error: "Unauthorized to update this profile" },
         { status: 403 }
@@ -90,12 +82,12 @@ export async function PATCH(
     const json = await request.json();
 
     const updatedProfile = await prisma.profile.update({
-      where: { userId },
+      where: { user_id: userId },
       data: {
         firstName: json.firstName || undefined,
         lastName: json.lastName || undefined,
-        avatarUrl: json.avatarUrl || undefined,
-        active: json.active !== undefined ? json.active : undefined,
+        profile_image_url: json.profile_image_url || undefined,
+        client_type: json.client_type || undefined,
       },
     });
 

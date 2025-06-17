@@ -1,19 +1,14 @@
 import {
-  AlertCircle,
-  AppWindow,
-  AudioWaveform,
-  Ban,
-  Bug,
-  CheckSquare,
-  Command,
-  GalleryVerticalEnd,
+  AlertTriangle,
+  BarChart3,
+  Building2,
+  Clock,
+  FileText,
   HelpCircle,
   LayoutDashboard,
-  Lock,
-  LockKeyhole,
-  MessageSquare,
   Settings,
-  ServerCrash,
+  Shield,
+  UserCheck,
   UserX,
   Users,
 } from "lucide-react";
@@ -21,132 +16,93 @@ import type { SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
   user: {
-    name: "satnaing",
-    email: "satnaingdev@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Admin",
+    email: "admin@predio.com",
+    avatar: "/avatars/admin.jpg",
   },
   teams: [
     {
-      name: "Shadcn Admin",
-      logo: Command,
-      plan: "Vite + ShadcnUI",
-    },
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
+      name: "Predio",
+      logo: Building2,
+      plan: "Dashboard Admin",
     },
   ],
   navGroups: [
     {
-      title: "General",
+      title: "Navegación Principal",
       items: [
         {
-          title: "Dashboard",
-          url: "/",
+          title: "Vista General",
+          url: "/dashboard",
           icon: LayoutDashboard,
         },
         {
-          title: "Tasks",
-          url: "/tasks",
-          icon: CheckSquare,
-        },
-        {
-          title: "Apps",
-          url: "/apps",
-          icon: AppWindow,
-        },
-        {
-          title: "Chats",
-          url: "/chats",
-          badge: "3",
-          icon: MessageSquare,
-        },
-        {
-          title: "Users",
-          url: "/users",
-          icon: Users,
-        },
-      ],
-    },
-    {
-      title: "Pages",
-      items: [
-        {
-          title: "Auth",
-          icon: Lock,
+          title: "Moderación",
+          icon: Shield,
           items: [
             {
-              title: "Sign In",
-              url: "/sign-in",
+              title: "Propiedades Pendientes",
+              url: "/moderacion/propiedades",
+              icon: Building2,
             },
             {
-              title: "Sign In (2 Col)",
-              url: "/sign-in-2",
+              title: "Reportes de Usuarios",
+              url: "/moderacion/reportes",
+              icon: AlertTriangle,
             },
             {
-              title: "Sign Up",
-              url: "/sign-up",
-            },
-            {
-              title: "Forgot Password",
-              url: "/forgot-password",
-            },
-            {
-              title: "OTP",
-              url: "/otp",
+              title: "Historial",
+              url: "/moderacion/historial",
+              icon: Clock,
             },
           ],
         },
         {
-          title: "Errors",
-          icon: Bug,
+          title: "Usuarios",
+          icon: Users,
           items: [
             {
-              title: "Unauthorized",
-              url: "/401",
-              icon: LockKeyhole,
+              title: "Lista de Usuarios",
+              url: "/usuarios/lista",
+              icon: Users,
             },
             {
-              title: "Forbidden",
-              url: "/403",
+              title: "Usuarios Verificados",
+              url: "/usuarios/verificados",
+              icon: UserCheck,
+            },
+            {
+              title: "Usuarios Suspendidos",
+              url: "/usuarios/suspendidos",
               icon: UserX,
             },
+          ],
+        },
+        {
+          title: "Analytics",
+          icon: BarChart3,
+          items: [
             {
-              title: "Not Found",
-              url: "/404",
-              icon: AlertCircle,
-            },
-            {
-              title: "Internal Server Error",
-              url: "/500",
-              icon: ServerCrash,
-            },
-            {
-              title: "Maintenance Error",
-              url: "/503",
-              icon: Ban,
+              title: "Reportes",
+              url: "/analytics/reportes",
+              icon: FileText,
             },
           ],
         },
-      ],
-    },
-    {
-      title: "Other",
-      items: [
         {
-          title: "Settings",
+          title: "Configuración",
           icon: Settings,
-          url: "/settings",
+          items: [
+            {
+              title: "Sistema",
+              url: "/configuracion/sistema",
+              icon: Settings,
+            },
+          ],
         },
         {
-          title: "Help Center",
-          url: "/help-center",
+          title: "Soporte",
+          url: "/soporte",
           icon: HelpCircle,
         },
       ],

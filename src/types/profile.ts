@@ -1,14 +1,8 @@
-import type { UserRole } from "@prisma/client";
-
 export interface Profile {
-  id: string;
-  userId: string;
-  avatarUrl?: string;
-  birthDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  active: boolean;
+  user_id: string;
   firstName?: string;
   lastName?: string;
-  role: UserRole;
-} 
+  profile_image_url?: string;
+  client_type?: string;
+  created_at?: Date;
+}

@@ -24,6 +24,13 @@ import Image from "next/image";
 import { uploadAvatar } from "@/lib/supabase/upload-avatar";
 import { useRouter } from "next/navigation";
 import { saltAndHashPassword } from "@/lib/auth/password-crypto";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +46,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
       email: "",
       firstName: "",
       lastName: "",
+      client_type: "Individual",
       password: "",
       confirmPassword: "",
     },
@@ -82,10 +90,10 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
       }
 
       if (user) {
-        let avatarUrl = null;
+        let profile_image_url = null;
         if (avatarFile) {
           try {
-            avatarUrl = await uploadAvatar(avatarFile, user.id);
+            profile_image_url = await uploadAvatar(avatarFile, user.id);
           } catch (error) {
             console.error("Avatar upload failed:", error);
             toast({
@@ -106,23 +114,27 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
             userId: user.id,
             firstName: data.firstName,
             lastName: data.lastName,
-            birthDate: data.birthDate,
-            avatarUrl,
+            profile_image_url,
+            client_type: data.client_type,
           }),
         });
 
+        console.log("Profile API response status:", response.status);
+
         let result: Record<string, unknown>;
-        let text = ""; // Define text outside the try block
+        let text = "";
 
         try {
-          text = await response.text(); // Assign value inside try
+          text = await response.text();
+          console.log("Profile API response text:", text);
           result = text ? JSON.parse(text) : {};
 
           if (!response.ok) {
+            console.error("Profile creation failed:", result);
             throw new Error(
               typeof result.error === "string"
                 ? result.error
-                : `Server responded with status ${response.status}`
+                : `Server responded with status ${response.status}: ${text}`
             );
           }
         } catch (parseError) {
@@ -130,8 +142,15 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
             "Response parsing error:",
             parseError,
             "Response text:",
-            text
+            text,
+            "Status:",
+            response.status
           );
+          if (!response.ok) {
+            throw new Error(
+              `Server error (${response.status}): ${text || "No response body"}`
+            );
+          }
           throw new Error("Invalid server response");
         }
 
@@ -168,141 +187,181 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative h-24 w-24">
-              {avatarPreview ? (
-                <Image
-                  src={avatarPreview}
-                  alt="Avatar preview"
-                  fill
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-                  <UploadCloud className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="w-full max-w-xs"
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="name@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="grid gap-2">
             <FormField
               control={form.control}
-              name="firstName"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="John" {...field} />
+                    <Input placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    placeholder="********"
-                    {...field}
-                    onChange={handlePasswordChange}
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center space-y-2">
+              <div className="h-20 w-20 overflow-hidden rounded-full border border-dashed border-gray-300">
+                {avatarPreview ? (
+                  <Image
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    width={80}
+                    height={80}
+                    className="h-full w-full object-cover"
                   />
-                </FormControl>
-                <PasswordStrengthIndicator password={password} />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gray-50">
+                    <UploadCloud className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <label
+                  htmlFor="avatar-upload"
+                  className="cursor-pointer text-sm text-primary underline hover:text-primary/80"
+                >
+                  Upload Avatar
+                </label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
 
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <PasswordInput placeholder="********" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-          <Button className="w-full" disabled={isLoading}>
-            Create Account
-          </Button>
+            <FormField
+              control={form.control}
+              name="client_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select client type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Individual">Individual</SelectItem>
+                      <SelectItem value="Business">Business</SelectItem>
+                      <SelectItem value="Corporate">Corporate</SelectItem>
+                      <SelectItem value="Enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <PasswordInput
+                      placeholder="********"
+                      {...field}
+                      onChange={handlePasswordChange}
+                    />
+                  </FormControl>
+                  <PasswordStrengthIndicator password={password} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <PasswordInput placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button className="mt-2" disabled={isLoading}>
+              Create Account
+            </Button>
+
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                type="button"
+                disabled={isLoading}
+              >
+                <GithubIcon className="h-4 w-4" /> GitHub
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                type="button"
+                disabled={isLoading}
+              >
+                <FacebookIcon className="h-4 w-4" /> Facebook
+              </Button>
+            </div>
+          </div>
         </form>
       </Form>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          className="w-full"
-          type="button"
-          disabled={isLoading}
-        >
-          <GithubIcon className="h-4 w-4" /> GitHub
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          type="button"
-          disabled={isLoading}
-        >
-          <FacebookIcon className="h-4 w-4" /> Facebook
-        </Button>
-      </div>
     </div>
   );
 }

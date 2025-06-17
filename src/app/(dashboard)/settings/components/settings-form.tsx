@@ -36,8 +36,12 @@ const settingsFormSchema = z.object({
     .string()
     .min(2, "El apellido debe tener al menos 2 caracteres")
     .optional(),
-  avatarUrl: z.string().url("URL inválida").optional().or(z.literal("")),
-  active: z.boolean().default(true),
+  profile_image_url: z
+    .string()
+    .url("URL inválida")
+    .optional()
+    .or(z.literal("")),
+  client_type: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
@@ -54,8 +58,8 @@ export function SettingsForm() {
     defaultValues: {
       firstName: profile?.firstName || "",
       lastName: profile?.lastName || "",
-      avatarUrl: profile?.avatarUrl || "",
-      active: profile?.active ?? true,
+      profile_image_url: profile?.profile_image_url || "",
+      client_type: profile?.client_type || "",
     },
   });
 
@@ -65,8 +69,8 @@ export function SettingsForm() {
       form.reset({
         firstName: profile.firstName || "",
         lastName: profile.lastName || "",
-        avatarUrl: profile.avatarUrl || "",
-        active: profile.active ?? true,
+        profile_image_url: profile.profile_image_url || "",
+        client_type: profile.client_type || "",
       });
     }
   }, [profile, form]);
@@ -102,8 +106,8 @@ export function SettingsForm() {
             body: JSON.stringify({
               firstName: data.firstName,
               lastName: data.lastName,
-              avatarUrl: newAvatarUrl || data.avatarUrl,
-              active: data.active,
+              profile_image_url: newAvatarUrl || data.profile_image_url,
+              client_type: data.client_type,
             }),
           });
 
@@ -185,8 +189,8 @@ export function SettingsForm() {
             <CardContent className="space-y-4">
               {profile && (
                 <AvatarUpload
-                  userId={profile.userId}
-                  currentAvatarUrl={profile.avatarUrl}
+                  userId={profile.user_id}
+                  currentAvatarUrl={profile.profile_image_url}
                   onUploadComplete={(url) => setNewAvatarUrl(url)}
                   onUploadError={(error) => {
                     toast({
@@ -228,27 +232,6 @@ export function SettingsForm() {
               </div>
             </CardContent>
           </Card>
-
-          {(profile?.role as string) === "SUPERADMIN" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Información de Rol</CardTitle>
-                <CardDescription>
-                  Información sobre tu tipo de cuenta
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">Rol:</span>
-                  <span className="text-sm text-muted-foreground">
-                    {(profile?.role as string) === "USER" && "Usuario"}
-                    {(profile?.role as string) === "SUPERADMIN" &&
-                      "Administrador"}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
