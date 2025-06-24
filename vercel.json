@@ -8,8 +8,5 @@
       "maxDuration": 30
     }
   },
-  "regions": ["iad1"],
-  "env": {
-    "NEXT_PUBLIC_VERCEL_ENV": "@vercel-env"
-  }
+  "regions": ["iad1"]
 }
