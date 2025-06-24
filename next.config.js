@@ -1,11 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
-    turbotrace: {
-      logLevel: 'bug',
-    },
-  },
+  serverExternalPackages: ['@prisma/client', 'prisma'],
   images: {
     domains: [
       // Add your Supabase project domain
